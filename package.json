@@ -30,16 +30,18 @@
   ],
   "main": "dist/js/jquery.spinner.js",
   "scripts": {
+    "echo_name": "cross-env echo $npm_package_name",
     "test": "npm run css; npm run js; karma start js/tests/karma.conf.js",
     "css": "npm run css-compile; npm run css-minify",
     "css-compile": "lessc less/bootstrap-spinner.less dist/css/bootstrap-spinner.css",
     "css-minify": "cleancss --level 1 --source-map --source-map-inline-sources --output dist/css/bootstrap-spinner.min.css dist/css/bootstrap-spinner.css",
     "js": "npm run js-compile; npm run js-minify",
     "js-compile": "mkdir -p dist/js; cp -rf js/*.js dist/js/",
-    "js-minify": "uglifyjs --compress --output dist/js/$npm_package_name.min.js dist/js/$npm_package_name.js",
+    "js-minify": "cross-env-shell \"uglifyjs --compress --output dist/js/$npm_package_name.min.js dist/js/$npm_package_name.js\"",
     "release-zip": "cd dist/ && zip -r9 $npm_package_name-$npm_package_version-dist.zip * && mv $npm_package_name-$npm_package_version-dist.zip .."
   },
   "devDependencies": {
+    "cross-env": "5.2.0",
     "puppeteer": "1.10.0",
     "karma": "3.1.1",
     "karma-chrome-launcher": "2.2.0",
@@ -50,5 +52,8 @@
     "less": "3.8.1",
     "jquery": "3.3.1",
     "qunit": "2.8.0"
+  },
+  "dependencies": {
+    "sinon": "^7.1.1"
   }
 }

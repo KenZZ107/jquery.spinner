@@ -53,6 +53,7 @@
 
     //init input value
     this.oldValue = this.value();
+    this.oldValueForChanged = null;
     this.value(this.$el.val());
     return this;
   };
@@ -67,6 +68,14 @@
     hour:     { min: 0, max: 23, step: 1, precision: 0 },
     minute:   { min: 1, max: 59, step: 1, precision: 0 },
     second:   { min: 1, max: 59, step: 1, precision: 0 }
+  };
+
+  var setValue = function(v) {
+    var valid = this.validate(v);
+    if (valid !== 0) {
+      v = (valid === -1) ? this.min : this.max;
+    }
+    this.$el.val(v.toFixed(this.options.precision));
   };
 
   Spinning.prototype = {
@@ -88,20 +97,25 @@
       }
       v = this.numeric(v);
 
-      var valid = this.validate(v);
-      if (valid !== 0) {
-        v = (valid === -1) ? this.min : this.max;
-      }
-      this.$el.val(v.toFixed(this.options.precision));
+      // var valid = this.validate(v);
+      // if (valid !== 0) {
+      //   v = (valid === -1) ? this.min : this.max;
+      // }
+      // this.$el.val(v.toFixed(this.options.precision));
+      setValue.apply(this, [v]);
 
       if (this.oldValue !== this.value()) {
         // changing.spinner
         this.$el.trigger('changing.spinner', [this.value(), this.oldValue]);
 
+        if (this.oldValueForChanged === null) {
+          this.oldValueForChanged = this.oldValue;
+        }
         // lazy changed.spinner
         clearTimeout(spinningTimer);
         spinningTimer = setTimeout($.proxy(function() {
-          this.$el.trigger('changed.spinner', [this.value(), this.oldValue]);
+          this.$el.trigger('changed.spinner', [this.value(), this.oldValueForChanged]);
+          this.oldValueForChanged = null;
         }, this), Spinner.delay);
       }
     },
@@ -127,6 +141,18 @@
       }
 
       return 0;
+    },
+
+    updateMax: function(max) {
+      this.options.max = max;
+      this.max = max;
+      setValue.apply(this, [this.value()]);
+    },
+
+    updateMin: function(min) {
+      this.options.min = min;
+      this.min = min;
+      setValue.apply(this, [this.value()]);
     }
   };
 
@@ -235,6 +261,10 @@
         data.spinning.step = value;
       } else if (options === 'spin' && value) {
         data.spinning.spin(value);
+      } else if (options === 'max' && value) {
+        data.spinning.updateMax(value);
+      } else if (options === 'min' && value) {
+        data.spinning.updateMin(value);
       }
     });
   };
